@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	prom "github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/riandyrn/otelchi"
 	"github.com/rs/zerolog/log"
@@ -22,6 +23,16 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 )
+
+var fooCounter = prom.NewCounter(prom.CounterOpts{
+	Name: "api_foo_requests_total",
+	Help: "Total number of requests to the /foo endpoint.",
+})
+
+func init() {
+	// Register the counter with Prometheus's default registry.
+	prom.MustRegister(fooCounter)
+}
 
 func main() {
 	// Create a context with a cancelletion
@@ -54,6 +65,9 @@ func main() {
 	router.Use(otelchi.Middleware(svcName))
 
 	router.Get("/foo", func(w http.ResponseWriter, r *http.Request) {
+		// Increment the counter for each request to /foo
+		fooCounter.Inc()
+
 		w.Write([]byte("bar"))
 		log.Info().Caller().Str("foo", "bar").Msg("get")
 	})
