@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	prom "github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/riandyrn/otelchi"
 	"github.com/rs/zerolog/log"
@@ -24,15 +25,10 @@ import (
 	"github.com/go-chi/render"
 )
 
-var fooCounter = prom.NewCounter(prom.CounterOpts{
+var fooCounter = promauto.NewCounter(prom.CounterOpts{
 	Name: "api_foo_requests_total",
 	Help: "Total number of requests to the /foo endpoint.",
 })
-
-func init() {
-	// Register the counter with Prometheus's default registry.
-	prom.MustRegister(fooCounter)
-}
 
 func main() {
 	// Create a context with a cancelletion
